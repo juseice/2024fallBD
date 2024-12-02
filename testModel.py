@@ -43,14 +43,14 @@ from keras.models import load_model
 BATCH_SIZE = 32 # batch size used for optimization
 # load the dataset
 dataset = {}
-with h5py.File((’%s/%s’ % (DATA_DIR, DATA_FILE)), ’r’) as hf:
-    dataset[’X_test’] = np.array(hf.get(’X_test’))
-    dataset[’Y_test’] = np.array(hf.get(’Y_test’))
-X_test = np.array(dataset['X_test'], dtype=’float32’)
-Y_test = np.array(dataset['Y_test'], dtype=’float32’)
+with h5py.File(('%s/%s' % (DATA_DIR, DATA_FILE)), 'r') as hf:
+    dataset['X_test'] = np.array(hf.get('X_test'))
+    dataset['Y_test'] = np.array(hf.get('Y_test'))
+X_test = np.array(dataset['X_test'], dtype='float32')
+Y_test = np.array(dataset['Y_test'], dtype='float32')
 # create the data generator
 datagen = ImageDataGenerator()
 test_generator = datagen.flow(X_test, Y_test, batch_size=BATCH_SIZE)
 # load the infected model
-model = load_model((’%s/%s’ % (MODEL_DIR, MODEL_FILENAME)))
+model = load_model(('%s/%s' % (MODEL_DIR, MODEL_FILENAME)))
 model.summary()
