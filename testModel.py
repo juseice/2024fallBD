@@ -12,6 +12,17 @@ import h5py
 from tensorflow.python.framework.ops import disable_eager_execution
 disable_eager_execution()
 
+
+import numpy as np
+# os.pwd()
+ROOT_DIR = ""
+DATA_DIR = ROOT_DIR+'' # data folder
+DATA_FILE = 'gtsrb_dataset_int.h5' # dataset file
+MODEL_DIR = ROOT_DIR+'' # model directory
+MODEL_FILENAME = 'gtsrb_bottom_right_white_4_target_33.h5' # model file
+RESULT_DIR = '/results' # directory for storing results
+# # image filename template for visualization results
+# IMG_FILENAME_TEMPLATE = 'gtsrb_visualize_%s_label_%d.png'
 # import numpy as np
 # import tensorflow as tf
 # from keras.models import load_model
