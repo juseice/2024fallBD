@@ -38,8 +38,8 @@ disable_eager_execution()
 #     print("Error loading and recompiling the model:", str(e))
 #     raise
 
-from keras.preprocessing.image import ImageDataGenerator
-from keras.models import load_model
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import load_model
 BATCH_SIZE = 32 # batch size used for optimization
 # load the dataset
 dataset = {}
