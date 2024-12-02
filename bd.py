@@ -7,10 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1k43fY_C_WhPN5Ccj20T16dTtUT61C7eq
 """
 
-# !pip install keras==2.2.2
-# !pip install numpy==1.14.0
-# !pip install tensorflow-gpu==1.10.1
-# !pip install h5py==2.6.0
 import sys
 print(sys.version)
 
@@ -19,81 +15,65 @@ print(torch.__version__)
 
 import tensorflow as tf
 print(tf.__version__)
+print("Is GPU available:", tf.config.list_physical_devices('GPU'))
 
-import sys, os, h5py
+import h5py
 from tensorflow.python.framework.ops import disable_eager_execution
 disable_eager_execution()
+
+
 import numpy as np
-
-from google.colab import drive
-drive.mount('/content/gdrive', force_remount=True)
-
 # os.pwd()
-ROOT_DIR = "/content/gdrive/My Drive/Privacy"
-DATA_DIR = ROOT_DIR+'/data' # data folder
+ROOT_DIR = ""
+DATA_DIR = ROOT_DIR+'' # data folder
 DATA_FILE = 'gtsrb_dataset_int.h5' # dataset file
-MODEL_DIR = ROOT_DIR+'/models' # model directory
+MODEL_DIR = ROOT_DIR+'' # model directory
 MODEL_FILENAME = 'gtsrb_bottom_right_white_4_target_33.h5' # model file
-RESULT_DIR = ROOT_DIR+'/results' # directory for storing results
-# image filename template for visualization results
-IMG_FILENAME_TEMPLATE = 'gtsrb_visualize_%s_label_%d.png'
+RESULT_DIR = '/results' # directory for storing results
+# # image filename template for visualization results
+# IMG_FILENAME_TEMPLATE = 'gtsrb_visualize_%s_label_%d.png'
+# import numpy as np
+# import tensorflow as tf
+# from keras.models import load_model
+# from tensorflow.keras.optimizers import Adam
+# from tensorflow.keras.losses import SparseCategoricalCrossentropy
+# from sklearn.model_selection import train_test_split
+# from sklearn.metrics import accuracy_score, roc_auc_score
+# from sklearn.ensemble import RandomForestClassifier
+# import joblib
+# from keras.saving import register_keras_serializable
+#
+# try:
+#     # Load without compiling to fix the reduction issue
+#     target_model = load_model('gtsrb_bottom_right_white_4_target_33.h5', compile=False)
+#
+#     # Recompile the model with the custom loss function
+#     target_model.compile(optimizer=Adam(), metrics=['accuracy'])
+#     model.summary()
+#
+#     # Save the model in the recommended Keras format
+#     target_model.save('corrected_target_model.keras')
+#     print("Model successfully recompiled and saved as 'corrected_target_model.keras'.")
+# except Exception as e:
+#     print("Error loading and recompiling the model:", str(e))
+#     raise
 
-import numpy as np
-import tensorflow as tf
-from tensorflow.keras.models import load_model
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, roc_auc_score
-from sklearn.ensemble import RandomForestClassifier
-import joblib
-from keras.saving import register_keras_serializable
-
-# Step 1: Define and register a compatible custom loss function
-@register_keras_serializable()
-def custom_loss(y_true, y_pred):
-    """Custom loss to replace the old reduction='auto' loss."""
-    return SparseCategoricalCrossentropy()(y_true, y_pred)
-
-# Step 2: Load the target model without compiling and recompile it
-try:
-    # Load without compiling to fix the reduction issue
-    target_model = load_model('/content/gdrive/My Drive/Privacy/gtsrb_bottom_right_white_4_target_33.h5', compile=False)
-
-    # Recompile the model with the custom loss function
-    target_model.compile(optimizer=Adam(), loss=custom_loss, metrics=['accuracy'])
-
-    # Save the model in the recommended Keras format
-    target_model.save('corrected_target_model.keras')
-    print("Model successfully recompiled and saved as 'corrected_target_model.keras'.")
-except Exception as e:
-    print("Error loading and recompiling the model:", str(e))
-    raise
-
-# !pip install tensorflow-gpu
-# !pip install adversarial-robustness-toolbox
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import load_model
-from tensorflow.keras.utils import CustomObjectScope
-from tensorflow.keras.initializers import glorot_uniform
-
 BATCH_SIZE = 32 # batch size used for optimization
-
 # load the dataset
 dataset = {}
-with h5py.File(('%s/%s' % (DATA_DIR, DATA_FILE)), 'r') as hf:
-  dataset['X_test'] = np.array(hf.get('X_test'))
-  dataset['Y_test'] = np.array(hf.get('Y_test'))
+with h5py.File(('%s' % (DATA_FILE)), 'r') as hf:
+    dataset['X_test'] = np.array(hf.get('X_test'))
+    dataset['Y_test'] = np.array(hf.get('Y_test'))
 X_test = np.array(dataset['X_test'], dtype='float32')
 Y_test = np.array(dataset['Y_test'], dtype='float32')
-
 # create the data generator
 datagen = ImageDataGenerator()
 test_generator = datagen.flow(X_test, Y_test, batch_size=BATCH_SIZE)
 # load the infected model
-model_file = '%s/%s' % (MODEL_DIR, MODEL_FILENAME)
-# with CustomObjectScope({'GlorotUniform': glorot_uniform()}):
-model = load_model(model_file, compile=False)
+model = load_model(('%s' % (MODEL_FILENAME)))
+model.summary()
 
 NUM_CLASSES = 43 # total number of classes in the model
 Y_TARGET = 33 # (optional) infected target label used for prioritizing label scanning
@@ -109,11 +89,11 @@ NB_SAMPLE = 1000 # number of samples in each mini-batch
 MINI_BATCH = NB_SAMPLE // BATCH_SIZE # mini batch size used for early stop
 
 # define the performer structure
-import keras
-from keras.utils import to_categorical
-from keras import backend as K
-from keras.losses import categorical_crossentropy
-from keras.metrics import categorical_accuracy
+import tensorflow.keras
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras import backend as K
+from tensorflow.keras.losses import categorical_crossentropy
+from tensorflow.keras.metrics import categorical_accuracy
 from decimal import Decimal
 # trainining-related prameters
 STEPS = 1000 # total optimization iterations
@@ -331,5 +311,3 @@ for y_label in range(NUM_CLASSES):
 l1_norm_list = [np.sum(np.abs(m)) for m in mask_flatten]
 print('%d labels found' % len(l1_norm_list))
 outlier_detection(l1_norm_list, idx_mapping)
-
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
